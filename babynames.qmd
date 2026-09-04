@@ -1,0 +1,61 @@
+---
+title: "Babies Named Tristan (1926–2025)"
+format: html
+execute:
+  echo: false
+---
+
+```{r}
+#| message: false
+#| warning: false
+library(tidyverse)
+
+# 100-year window
+years <- 1926:2025
+
+# Read and combine records for "Tristan" across all 100 years
+tristan_data <- map_dfr(years, \(y) {
+  file <- sprintf("data/yob%d.txt", y)
+  if (!file.exists(file)) return(tibble())
+  read_csv(file, col_names = c("name", "sex", "n"), col_types = "cci", show_col_types = FALSE) |> 
+    filter(name == "Tristan") |> 
+    mutate(year = y)
+})
+
+# Yearly totals
+tristan_totals <- tristan_data |> 
+  group_by(year) |> 
+  summarize(total = sum(n), .groups = "drop")
+
+# Plot with annotation for Legends of the Fall release
+ggplot(tristan_totals, aes(x = year, y = total)) +
+  geom_line(color = "#2b5c8f", linewidth = 1) +
+  geom_vline(xintercept = 1994, linetype = "dashed", color = "#c93b27") +
+  annotate(
+    "text",
+    x = 1994,
+    y = 5600,
+    label = "Legends of the Fall (1994)\nBrad Pitt stars as Tristan",
+    hjust = 1.05,
+    size = 3.5,
+    color = "#c93b27"
+  ) +
+  theme_minimal() +
+  labs(
+    title = "Babies Named Tristan (1926–2025)",
+    subtitle = "Popularity spiked nearly 10x after the 1994 film Legends of the Fall",
+    x = "Year",
+    y = "Number of Babies",
+    caption = "Source: US Social Security Administration"
+  )
+```
+
+::: {.callout-note icon=false}
+### *Legends of the Fall* and the 1995 Spike
+
+In December 1994, the film ***Legends of the Fall*** was released in theaters, starring Brad Pitt as the passionate lead character **Tristan Ludlow**. 
+
+Before the film (1994), only 588 babies in the US were named Tristan. By 1996, that number surged to **5,844** — an almost tenfold increase!
+
+![Brad Pitt as Tristan in *Legends of the Fall*](legends_of_the_fall.gif){width=500px}
+:::
